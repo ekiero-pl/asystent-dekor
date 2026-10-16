@@ -1,0 +1,23 @@
+# Asystent Dekor by Ekiero · © 2026 · Wszelkie prawa zastrzeżone
+# Budzik: raz dziennie jedno małe zapytanie do serwera (Supabase), żeby darmowy plan nie uśpił projektu
+# po 7 dniach bez ruchu (np. urlop, święta). Nic nie zmienia w danych. Ręcznie: Actions → Budzik → Run workflow.
+name: Budzik
+
+on:
+  schedule:
+    - cron: '17 5 * * *'   # codziennie ok. 7:17 (czas polski latem)
+  workflow_dispatch:
+
+jobs:
+  budzik:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Jedno zapytanie do serwera
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            -H "apikey: sb_publishable_CSnXcmAWEoGk-2pWwjWbwg_JMi3JMb2" \
+            "https://tscanhiejpsbbopsfgbi.supabase.co/rest/v1/app_cfg?select=k&limit=1")
+          echo "Serwer odpowiedział: $code"
+          echo "### Budzik: serwer odpowiedział $code ($(date -u +%F' '%H:%M) UTC)" >> "$GITHUB_STEP_SUMMARY"
+          [ "$code" -lt 500 ]
